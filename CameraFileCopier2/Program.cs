@@ -21,27 +21,30 @@ namespace CameraFileCopier2
             }
             Console.WriteLine();
             List<string> files = Directory.GetFiles(pathToCopyFrom).ToList();
-            List<Tuple<string, string>> renamed = new List<Tuple<string, string>>();
+            Dictionary<string, string> renamed = new Dictionary<string, string>();
             foreach (string file in files)
             {
                 string oldName = Path.GetFileName(file);
-                DateTime creationTime = File.GetCreationTime(file);
-                string newName = string.Format("{0:yyyy-MM-dd HH:mm:ss}_{1}", creationTime, oldName);
-                Console.WriteLine(string.Format("{0}{1}{2}", oldName, " ---> ", newName));
+                DateTime creationTime = File.GetLastWriteTime(file);
+                string newName = string.Format("{0:yyyy-MM-dd HH-mm-ss}_{1}", creationTime, oldName);
+                renamed.Add(oldName, newName);
+            }
+            foreach (KeyValuePair<string, string> item in renamed)
+            {
+                Console.WriteLine(string.Format("{0}{1}{2}", item.Key, " ---> ", item.Value));
             }
             Console.WriteLine("Rename? (Y/N)");
             if (Console.ReadKey().Key != ConsoleKey.Y)
             {
                 return;
             }
-            foreach (string file in files)
+            Console.WriteLine();
+            foreach (KeyValuePair<string, string> item in renamed)
             {
-                string oldName = Path.GetFileName(file);
-                DateTime creationTime = File.GetCreationTime(file);
-                string newName = string.Format("{0:yyyy-MM-dd HH-mm-ss}_{1}", creationTime, oldName);
-                File.Move(file, Path.Combine(pathToCopyFrom, newName));
-                Console.WriteLine(string.Format("{0}{1}{2}{3}", oldName, " ---> ", newName, " ----> OK!"));
+                File.Move(Path.Combine(pathToCopyFrom, item.Key), Path.Combine(pathToCopyFrom, item.Value));
+                Console.WriteLine(string.Format("{0}{1}{2}{3}", item.Key, " ---> ", item.Value, " ----> OK!"));
             }
+
             Console.ReadLine();
         }
     }
